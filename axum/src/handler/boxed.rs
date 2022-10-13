@@ -28,7 +28,7 @@ impl<S, B, E> BoxedHandler<S, B, E> {
         S: 'static,
         B: 'static,
         E: 'static,
-        F: FnOnce(Route<B, E>) -> Route<B2, E2> + Clone + Send + 'static,
+        F: FnOnce(Route<B, E>) -> Route<B2, E2> + Clone + Send + Sync + 'static,
         B2: 'static,
         E2: 'static,
     {
@@ -49,7 +49,7 @@ impl<S, B, E> Clone for BoxedHandler<S, B, E> {
     }
 }
 
-trait ErasedHandler<S, B, E = Infallible>: Send {
+trait ErasedHandler<S, B, E = Infallible>: Send + Sync {
     fn clone_box(&self) -> Box<dyn ErasedHandler<S, B, E>>;
 
     fn into_route(self: Box<Self>, state: S) -> Route<B, E>;
@@ -62,7 +62,7 @@ struct MakeErasedHandler<H, S, B> {
 
 impl<H, S, B> ErasedHandler<S, B> for MakeErasedHandler<H, S, B>
 where
-    H: Clone + Send + 'static,
+    H: Clone + Send + Sync + 'static,
     S: 'static,
     B: 'static,
 {
@@ -109,13 +109,13 @@ where
     }
 }
 
-trait LayerFn<B, E, B2, E2>: FnOnce(Route<B, E>) -> Route<B2, E2> + Send {
+trait LayerFn<B, E, B2, E2>: FnOnce(Route<B, E>) -> Route<B2, E2> + Send + Sync {
     fn clone_box(&self) -> Box<dyn LayerFn<B, E, B2, E2>>;
 }
 
 impl<F, B, E, B2, E2> LayerFn<B, E, B2, E2> for F
 where
-    F: FnOnce(Route<B, E>) -> Route<B2, E2> + Clone + Send + 'static,
+    F: FnOnce(Route<B, E>) -> Route<B2, E2> + Clone + Send + Sync + 'static,
 {
     fn clone_box(&self) -> Box<dyn LayerFn<B, E, B2, E2>> {
         Box::new(self.clone())

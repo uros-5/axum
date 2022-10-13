@@ -96,7 +96,7 @@ pub use self::service::HandlerService;
 /// {}
 /// ```
 #[doc = include_str!("../docs/debugging_handler_type_errors.md")]
-pub trait Handler<T, S, B = Body>: Clone + Send + Sized + 'static {
+pub trait Handler<T, S, B = Body>: Clone + Send + Sync + Sized + 'static {
     /// The type of future calling this handler returns.
     type Future: Future<Output = Response> + Send + 'static;
 
@@ -158,7 +158,7 @@ pub trait Handler<T, S, B = Body>: Clone + Send + Sized + 'static {
 
 impl<F, Fut, Res, S, B> Handler<((),), S, B> for F
 where
-    F: FnOnce() -> Fut + Clone + Send + 'static,
+    F: FnOnce() -> Fut + Clone + Send + Sync + 'static,
     Fut: Future<Output = Res> + Send,
     Res: IntoResponse,
     B: Send + 'static,
@@ -177,7 +177,7 @@ macro_rules! impl_handler {
         #[allow(non_snake_case, unused_mut)]
         impl<F, Fut, S, B, Res, M, $($ty,)* $last> Handler<(M, $($ty,)* $last,), S, B> for F
         where
-            F: FnOnce($($ty,)* $last,) -> Fut + Clone + Send + 'static,
+            F: FnOnce($($ty,)* $last,) -> Fut + Clone + Send + Sync + 'static,
             Fut: Future<Output = Res> + Send,
             B: Send + 'static,
             S: Send + Sync + 'static,
@@ -253,7 +253,7 @@ where
 
 impl<H, S, T, B, L> Handler<T, S, B> for Layered<L, H, T, S, B>
 where
-    L: Layer<HandlerService<H, T, S, B>> + Clone + Send + 'static,
+    L: Layer<HandlerService<H, T, S, B>> + Clone + Send + Sync + 'static,
     H: Handler<T, S, B>,
     L::Service: Service<Request<B>, Error = Infallible> + Clone + Send + 'static,
     <L::Service as Service<Request<B>>>::Response: IntoResponse,
