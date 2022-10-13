@@ -163,3 +163,10 @@ where
         }
     }
 }
+
+#[test]
+#[allow(warnings)]
+fn traits() {
+    use crate::test_helpers::*;
+    assert_sync::<RouterService<()>>();
+}

@@ -688,4 +688,5 @@ impl<S, B> fmt::Debug for Endpoint<S, B> {
 fn traits() {
     use crate::test_helpers::*;
     assert_send::<Router<(), ()>>();
+    assert_sync::<Router<(), ()>>();
 }
