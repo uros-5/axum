@@ -58,7 +58,7 @@ use std::{collections::HashMap, sync::Arc};
 ///
 /// # Matched path in nested routers
 ///
-/// Because of how [nesting] works `MatchedPath` isn't accessible in middleware on nested routes:
+/// Because of how [nesting] works, `MatchedPath` isn't accessible in middleware on nested routes:
 ///
 /// ```
 /// use axum::{
